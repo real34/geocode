@@ -307,9 +307,6 @@ class GeocodableBehavior extends ModelBehavior {
 			$query['operation'] = 'count';
 		}
 		$results = $model->find('near', $query);
-			if(empty ($query['order'])) {
-			//	usort($results, self::orderByDistance);
-			}
 		if ($type == 'first') {
 			if (!empty($results[0])) {
 				$result = $results[0];
