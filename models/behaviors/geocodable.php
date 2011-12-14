@@ -570,7 +570,6 @@ class GeocodableBehavior extends ModelBehavior {
 			}
 			return $query;
 		} elseif ($state == 'after') {
-
 			if (empty($query['point'])) {
 				return false;
 			} else {
@@ -637,10 +636,14 @@ class GeocodableBehavior extends ModelBehavior {
 			unset($query['conditions']);
 		}
 
-		$query = Set::merge(
-			$this->distanceQuery($model, $query['point'], $query['distance'], $query['unit'], !empty($query['direction']) ? $query['direction'] : 'ASC'),
-			array_diff_key($query, array('direction'=>true))
-		);
+		if (!empty($query['point'])) {
+			$query = Set::merge(
+				$this->distanceQuery($model, $query['point'], $query['distance'], $query['unit'], !empty($query['direction']) ? $query['direction'] : 'ASC'),
+				array_diff_key($query, array('direction'=>true))
+			);
+		} else {
+			$query['order'] = null;
+		}
 
 		return $query;
 	}
