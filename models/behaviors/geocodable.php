@@ -371,7 +371,7 @@ class GeocodableBehavior extends ModelBehavior {
 		$unit = (!empty($unit) && array_key_exists(strtolower($unit), $this->units) ? $unit : 'k');
 		$settings = $this->settings[$model->alias];
 		foreach($point as $k => $v) {
-			$point[$k] = floatval($v);
+			$point[$k] = number_format(floatval($v), 8);
 		}
 		list($latitude, $longitude) = $point;
 		list($latitudeField, $longitudeField) = array(
