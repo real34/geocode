@@ -11,28 +11,28 @@ class TestGeocodableBehavior extends GeocodableBehavior {
 }
 
 class TestAddress extends GeoAddress {
-	public $useDbConfig = 'test_suite';
+	public $useDbConfig = 'test';
 	public $actsAs = array('Geocode.Geocodable'=>array());
 	public $useTable = 'geo_addresses';
 }
 
 class City extends AppModel {
-	public $useDbConfig = 'test_suite';
+	public $useDbConfig = 'test';
 	public $belongsTo = array('State');
 }
 
 class State extends AppModel {
-	public $useDbConfig = 'test_suite';
+	public $useDbConfig = 'test';
 	public $belongsTo = array('Country');
 	public $hasMany = array('City');
 }
 
 class Country extends AppModel {
-	public $useDbConfig = 'test_suite';
+	public $useDbConfig = 'test';
 }
 
 class TestExtendedAddress extends GeoAddress {
-	public $useDbConfig = 'test_suite';
+	public $useDbConfig = 'test';
 	public $belongsTo = array('City', 'State');
 	public $actsAs = array('Geocode.Geocodable'=>array(
 		'models' => array(
