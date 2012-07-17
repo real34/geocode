@@ -378,7 +378,8 @@ class GeocodableBehavior extends ModelBehavior {
 				$$var = $data;
 			} else {
 				$$var = $this->geocode($model, $data);
-				$$var = array( $$var['latitude'], $$var['longitude'] );
+				$tempGeolocData = $$var;
+				$$var = array( $tempGeolocData['latitude'], $tempGeolocData['longitude'] );
 			}
 		}
 
