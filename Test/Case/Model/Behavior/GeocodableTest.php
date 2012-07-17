@@ -84,7 +84,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 
 		$this->Address->Behaviors->detach('Geocodable');
 		Configure::write('Geocode.service', 'nonexisting');
-		$this->expectError();
+		$this->expectError('PHPUnit_Framework_Error_Warning');
 		$this->Address->Behaviors->attach('Geocodable', array_diff_key($default, array('service'=>true)));
 	}
 
@@ -143,7 +143,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 		$expected = array(28.0792, -82.4735);
 		$this->assertEqual($result, $expected);
 
-		$this->expectError();
+		$this->expectError('PHPUnit_Framework_Error_Warning');
 		$result = $this->Address->geocode(array(
 			'address1' => '1600 Amphitheatre Parkway',
 			'city' => 'Mountan View',
