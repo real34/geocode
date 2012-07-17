@@ -140,7 +140,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 			'city' => 'Tampa',
 			'state' => 'FL'
 		));
-		$expected = array(28.0792, -82.4735);
+		$expected = array('latitude' => 28.0792, 'longitude' => -82.4735);
 		$this->assertEqual($result, $expected);
 
 		$this->expectError('PHPUnit_Framework_Error_Warning');
@@ -181,7 +181,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 			foreach($result as $i => $value) {
 				$result[$i] = round($value, 1);
 			}
-			$expected = array(37.4, -122.1);
+			$expected = array('latitude' => 37.4, 'longitude' => -122.1);
 			$this->assertEqual($result, $expected);
 		}
 
