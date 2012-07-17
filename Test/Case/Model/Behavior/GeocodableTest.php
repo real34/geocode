@@ -1,6 +1,5 @@
 <?php
 App::uses('GeocodableBehavior', 'Geocode.Model/Behavior');
-App::uses('GeoAddress', 'Geocode.Model');
 App::uses('Controller', 'Controller');
 
 class TestGeocodableBehavior extends GeocodableBehavior {
@@ -10,29 +9,21 @@ class TestGeocodableBehavior extends GeocodableBehavior {
 	}
 }
 
-class TestAddress extends GeoAddress {
-	public $useDbConfig = 'test';
+class TestAddress extends CakeTestModel {
 	public $actsAs = array('Geocode.Geocodable'=>array());
 	public $useTable = 'geo_addresses';
 }
 
-class City extends AppModel {
-	public $useDbConfig = 'test';
+class City extends CakeTestModel {
 	public $belongsTo = array('State');
 }
 
-class State extends AppModel {
-	public $useDbConfig = 'test';
+class State extends CakeTestModel {
 	public $belongsTo = array('Country');
 	public $hasMany = array('City');
 }
 
-class Country extends AppModel {
-	public $useDbConfig = 'test';
-}
-
-class TestExtendedAddress extends GeoAddress {
-	public $useDbConfig = 'test';
+class TestExtendedAddress extends CakeTestModel {
 	public $belongsTo = array('City', 'State');
 	public $actsAs = array('Geocode.Geocodable'=>array(
 		'models' => array(

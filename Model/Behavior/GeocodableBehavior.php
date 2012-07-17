@@ -7,6 +7,13 @@ App::uses('AppModel', 'Model');
 
 class GeocodableBehavior extends ModelBehavior {
 	/**
+	 * Allows to use custom finds in behavior
+	 *
+	 * @var array
+	 */
+	public $mapMethods = array('/\b_findNear\b/' => '_findNear');
+
+	/**
 	 * Behavior settings
 	 *
 	 * @var array
@@ -99,6 +106,8 @@ class GeocodableBehavior extends ModelBehavior {
 	 * @param array $settings Settings
 	 */
 	public function setup($model, $settings = array()) {
+		$model->findMethods['near'] = true;
+
 		if (!isset($this->settings[$model->alias])) {
 			$configured = Configure::read('Geocode');
 			if (!empty($configured)) {
@@ -311,50 +320,26 @@ class GeocodableBehavior extends ModelBehavior {
 	 * @return mixed Results
 	 */
 	public function near($model, $type, $origin, $distance = null, $unit = 'k', $query = array()) {
-		$settings = $this->settings[$model->alias];
-		list($latitudeField, $longitudeField) = array(
-			$settings['fields']['latitude'],
-			$settings['fields']['longitude'],
-		);
-
-		if (!empty($query['fields'])) {
-			$query['fields'] = array_merge($query['fields'], array(
-				$latitudeField,
-				$longitudeField
-			));
-		}
-
-		$point = null;
-		if (is_array($origin) && count($origin) == 2 && isset($origin[0]) && isset($origin[1]) && is_numeric($origin[0]) && is_numeric($origin[1])) {
-			$point = $origin;
+		$query['origin'] = $origin;
+		$query['distance'] = $distance;
+		$query['unit'] = $unit;
+		if ($type == 'count') {
+			$query['operation'] = 'count';
+			$query['type'] = 'near';
+			$results = $model->find('count', $query);
 		} else {
-			$point = $this->geocode($model, $origin);
-			$point = array( $point['latitude'], $point['longitude'] );
+			$results = $model->find('near', $query);
 		}
 
-		if (empty($point)) {
-			return false;
+		if ($type == 'first') {
+			if (!empty($results[0])) {
+				$results = $results[0];
+			} else {
+				$results = false;
+			}
 		}
 
-		if (empty($query['order'])) {
-			unset($query['order']);
-		}
-
-		$query = Set::merge(
-			$this->distanceQuery($model, $point, $distance, $unit, !empty($query['direction']) ? $query['direction'] : 'ASC'),
-			array_diff_key($query, array('direction'=>true))
-		);
-
-		if ($type == 'count' && !empty($query['order'])) {
-			unset($query['order']);
-		}
-		$result = $model->find($type, $query);
-
-		if (!empty($result) && $type != 'count') {
-			$result = $this->_loadDistance($model, $result, $point, $unit, $model->alias, $latitudeField, $longitudeField);
-		}
-
-		return $result;
+		return $results;
 	}
 
 	/**
@@ -410,7 +395,7 @@ class GeocodableBehavior extends ModelBehavior {
 		$unit = (!empty($unit) && array_key_exists(strtolower($unit), $this->units) ? $unit : 'k');
 		$settings = $this->settings[$model->alias];
 		foreach($point as $k => $v) {
-			$point[$k] = floatval($v);
+			$point[$k] = number_format(floatval($v), 8);
 		}
 		list($latitude, $longitude) = $point;
 		list($latitudeField, $longitudeField) = array(
@@ -428,6 +413,7 @@ class GeocodableBehavior extends ModelBehavior {
 		 )';
 
 		$expression = str_replace("\n", ' ', $expression);
+
 		$query = array(
 			'order' => $expression . ' ' . $direction,
 			'conditions' => array(
@@ -443,6 +429,36 @@ class GeocodableBehavior extends ModelBehavior {
 		}
 
 		return $query;
+	}
+
+/**
+ * Custom find method to find the most recent job offers. By default 5 results are returned
+ *
+ * @param array $models Model instance
+ * @method string $method The method call
+ * @param string $state Either "before" or "after"
+ * @param array $query Find parameters with keys "origin", "distance" (default: null) and "unit" (default: "k").
+ * @param array $results
+ * @return array
+ * @see Model::find()
+ */
+	public function _findNear($model, $method, $state, $query, $results = array()) {
+		if ($state == 'before') {
+			return $this->__prepareQuery($model, $query);
+		} elseif ($state == 'after') {
+			if (empty($query['point'])) {
+				return false;
+			}
+
+			$point = $query['point'];
+			if (!empty($point['latitude'])) {
+				$point = array($point['latitude'], $point['longitude']);
+			}
+			$results = $this->_loadDistance($model, $results, $point, $query['unit'],
+				$model->alias, $query['latitudeField'], $query['longitudeField']);
+
+			return $results;
+		}
 	}
 
 	/**
@@ -648,6 +664,70 @@ class GeocodableBehavior extends ModelBehavior {
 		}
 
 		return $data;
+	}
+
+/**
+ * Add complementary information to the query
+ *
+ * @param array $query The query before updating
+ * @return array The query updated
+ * @see GeocodableBehavior::_findNear() for $query keys
+ */
+	private function __prepareQuery($model, $query) {
+		$_defaults = array(
+			'distance' => null,
+			'unit' => 'k',
+		);
+		if(!empty($query['origin'])) {
+			$origin = $query['origin'];
+		} elseif (!empty($query['address'])) {
+			$origin = $query['address'];
+		} else {
+			$origin = array((float) '0', (float) '0');
+			$query['conditions'] = array('1=0');
+		}
+		$query = array_merge($_defaults, $query);
+
+		$settings = $this->settings[$model->alias];
+		list($query['latitudeField'], $query['longitudeField']) = array(
+			$settings['fields']['latitude'],
+			$settings['fields']['longitude'],
+		);
+
+		if (!empty($query['fields']) && is_array($query['fields'])) {
+			$query['fields'] = array_merge($query['fields'], array(
+				$query['latitudeField'],
+				$query['longitudeField']
+			));
+		}
+
+		$query['point'] = null;
+		if (is_array($origin) && count($origin) == 2 && isset($origin[0]) && isset($origin[1]) && is_numeric($origin[0]) && is_numeric($origin[1])) {
+			$query['point'] = $origin;
+		} else {
+			$query['point'] = $this->geocode($model, $origin);
+		}
+		if (empty($query['order'])) {
+			unset($query['order']);
+		}
+		if (empty($query['conditions'])) {
+			unset($query['conditions']);
+		}
+
+		if (!empty($query['point'])) {
+			$point = $query['point'];
+			if (isset($point['latitude'])) {
+				$point = array($point['latitude'], $point['longitude']);
+			}
+			$query = Set::merge(
+				$this->distanceQuery($model, $point, $query['distance'], $query['unit'], !empty($query['direction']) ? $query['direction'] : 'ASC'),
+				array_diff_key($query, array('direction'=>true))
+			);
+		} else {
+			$query['order'] = null;
+		}
+
+		return $query;
 	}
 }
 
