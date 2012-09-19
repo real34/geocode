@@ -188,13 +188,6 @@ class GeocodableBehavior extends ModelBehavior {
 			!empty($latitudeField) && !empty($longitudeField) &&
 			!isset($model->data[$model->alias][$latitudeField]) && !isset($model->data[$model->alias][$longitudeField])
 		) {
-
-			// If data['address'] is set, but data['address1'] is not, assume data['address'] is the street address, not the full address
-			if (!empty($model->data[$model->alias]['address']) && empty($model->data[$model->alias]['address1'])) {
-				$model->data[$model->alias]['address1'] = $model->data[$model->alias]['address'];
-				unset($model->data[$model->alias]['address']);
-			}
-
 			$data = $model->data[$model->alias];
 			if (!empty($settings['models'])) {
 				$data = $this->_data($settings['models'], $data);
@@ -568,12 +561,6 @@ class GeocodableBehavior extends ModelBehavior {
 	protected function _address($settings, $address) {
 		if (is_array($address)) {
 			$elements = array();
-
-			// If data['address'] is set, but data['address1'] is not, assume data['address'] is the street address, not the full address
-			if (!empty($address['address']) && empty($address['address1'])) {
-				$address['address1'] = $address['address'];
-				unset($address['address']);
-			}
 
 			foreach($settings['addressFields'] as $type => $fields) {
 				$fields = array_merge(array($type => $type), (array) $fields);
