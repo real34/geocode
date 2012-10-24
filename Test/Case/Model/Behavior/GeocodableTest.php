@@ -137,7 +137,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 		$this->expectError('PHPUnit_Framework_Error_Warning');
 		$result = $this->Address->geocode(array(
 			'address1' => '1600 Amphitheatre Parkway',
-			'city' => 'Mountan View',
+			'city' => 'Mountain View , Santa Clara',
 			'state' => 'CA',
 			'zip' => 94043,
 			'country' => 'United States of America'
@@ -154,7 +154,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 
 		$address = array(
 			'address1' => '1600 Amphitheatre Parkway',
-			'city' => 'Mountan View',
+			'city' => 'Mountain View , Santa Clara',
 			'state' => 'CA',
 			'zip' => 94043,
 			'country' => 'United States of America'
@@ -317,7 +317,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 	public function testSave() {
 		$address = array(
 			'address1' => '1600 Amphitheatre Parkway',
-			'city' => 'Mountan View',
+			'city' => 'Mountain View , Santa Clara',
 			'state' => 'CA',
 			'zip' => 94043,
 			'country' => 'United States of America'
@@ -393,7 +393,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 		$this->ExtendedAddress->create();
 		$saved = $this->ExtendedAddress->save(array(
 			'address_1' => '1600 Amphitheatre Parkway',
-			'city' => 'Mountan View',
+			'city' => 'Mountain View , Santa Clara',
 			'state_id' => '95147110-e770-102c-aa5d-00138fbbb402',
 			'zip' => 94043
 		));

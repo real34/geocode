@@ -10,7 +10,7 @@ class CityFixture extends CakeTestFixture {
 		array(
 			'id' => '951470f2-e770-102c-aa5d-00138fbbb402',
 			'state_id' => '95147110-e770-102c-aa5d-00138fbbb402',
-			'name' => 'Mountan View'
+			'name' => 'Mountain View, Santa Clara'
 		)
 	);
 }
